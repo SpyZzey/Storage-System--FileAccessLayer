@@ -1,0 +1,15 @@
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:3306/storagesystem
+spring.datasource.username=user
+spring.datasource.password=password
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.servlet.multipart.max-file-size=100MB
+spring.servlet.multipart.max-request-size=150MB
+
+#logging.level.root=WARN
+logging.level.org.springframework=fatal
+logging.level.com.appicantion.name=fatal
+
+
+logging.config=src/main/resources/log4j2.xml

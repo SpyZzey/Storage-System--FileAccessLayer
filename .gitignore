@@ -1,0 +1,46 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+/src/main/resources/application.properties
+/keys/jwt_rsa_key.pub
+/keys/jwt_rsa_key.key
+/src/main/resources/.env
+/src/main/resources/log4j2.xml
+/application.log
+/logs/storagesystem-log.log
+/logs/
+/src/test/keys/test_key.key
+/src/test/keys/test_key.pub
+/src/test/httpRequests/user_test2.http
+/src/test/httpRequests/http-client.env.json
+/src/test/httpRequests/http-client.private.env.json
