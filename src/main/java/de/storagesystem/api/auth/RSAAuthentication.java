@@ -27,7 +27,6 @@ import java.util.Map;
 /**
  * @author Simon Brebeck
  */
-@Component
 public class RSAAuthentication implements Authentication {
 
     /**
@@ -42,35 +41,22 @@ public class RSAAuthentication implements Authentication {
     /**
      * The issuer of the JWT.
      */
-    private String issuer;
-
-    /**
-     * Creates a new Authentication object.
-     *
-     * @throws IOException if the public or private key file could not be read from the key path stored in .env
-     * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
-     * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
-     */
-    public RSAAuthentication()
-            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        init();
-        this.publicKey = getPublicKey(getPathToPublicKey());
-        this.privateKey = getPrivateKey(getPathToPrivateKey());
-    }
+    private final String issuer;
 
     /**
      * Creates a new Authentication object with publicKeyPath and
      * privateKeyPath as paths to the private/public encryption key.
      *
+     * @param token_issuer The issuer of the JWT.
      * @param publicKeyPath path to the public key
      * @param privateKeyPath path to the private key
      * @throws IOException if the public or private key file could not be read from the  key path stored in .env
      * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
      * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
      */
-    public RSAAuthentication(String publicKeyPath, String privateKeyPath)
+    public RSAAuthentication(String token_issuer, String publicKeyPath, String privateKeyPath)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        init();
+        this.issuer = token_issuer;
         this.publicKey = getPublicKey(publicKeyPath);
         this.privateKey = getPrivateKey(privateKeyPath);
     }
@@ -82,19 +68,12 @@ public class RSAAuthentication implements Authentication {
      * @param publicKey public key
      * @param privateKey private key
      */
-    public RSAAuthentication(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
-        init();
+    public RSAAuthentication(String token_issuer, RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        this.issuer = token_issuer;
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
 
-    /**
-     * Initializes the Authentication object.
-     */
-    public void init() {
-        Dotenv dotenv = Dotenv.load();
-        issuer = dotenv.get("TOKEN_ISSUER");
-    }
 
     /**
      * {@inheritDoc}
@@ -130,11 +109,9 @@ public class RSAAuthentication implements Authentication {
     @Override
     public DecodedJWT verifyToken(String token) throws
             JWTVerificationException {
-
-        Dotenv env = Dotenv.load();
         Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
         return JWT.require(algorithm)
-                .withIssuer(env.get("TOKEN_ISSUER"))
+                .withIssuer(issuer)
                 .build()
                 .verify(token);
     }
@@ -200,22 +177,7 @@ public class RSAAuthentication implements Authentication {
         return Files.readAllBytes(path);
     }
 
-    /**
-     * Returns the path to the public key
-     * @return String path to public key
-     */
-    public static String getPathToPublicKey() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("PATH_PUBLIC_KEY");
+    public String issuer() {
+        return issuer;
     }
-
-    /**
-     * Returns the path to the private key
-     * @return String path to private key
-     */
-    public static String getPathToPrivateKey() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("PATH_PRIVATE_KEY");
-    }
-
 }

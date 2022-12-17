@@ -28,7 +28,7 @@ public class RSAAuthenticationTest {
     public void createAndReadRSAKeys() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKeyPath = "./src/test/keys/test_key.pub";
         String privateKeyPath = "./src/test/keys/test_key.key";
-        RSAAuthentication auth = new RSAAuthentication();
+        RSAAuthentication auth = new RSAAuthentication("", publicKeyPath, privateKeyPath);
 
         RSAPublicKey publicKey = auth.getPublicKey(publicKeyPath);
         RSAPrivateKey privateKey = auth.getPrivateKey(privateKeyPath);
@@ -48,7 +48,9 @@ public class RSAAuthenticationTest {
      */
     @Test
     public void createTokenAndExtractContentTest() throws InvalidTokenException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        RSAAuthentication auth = new RSAAuthentication();
+        String publicKeyPath = "./src/test/keys/test_key.pub";
+        String privateKeyPath = "./src/test/keys/test_key.key";
+        RSAAuthentication auth = new RSAAuthentication("", publicKeyPath, privateKeyPath);
 
         Map<String, String> payload = Map.of("KeyA", "ValueA", "KeyB", "ValueB");
         String token = auth.createToken(payload);

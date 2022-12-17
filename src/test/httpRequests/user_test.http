@@ -1,14 +1,14 @@
 ### Upload file to bucket
 POST localhost:8080/api/files/1
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJTdG9yYWdlU3lzdGVtIiwic2VydmVyX3R5cGUiOiJzdG9yYWdlLW1hc3Rlci1zZXJ2ZXIifQ.t1VZGiw-5r84mdHdKfugjA8ti99uYMTZsbNWHSrGsR01vYzpyPrOhQAUiQA4OGG_7aeBpT8f8BmtXAtzw0ssGFmlsFqlZhAQ-fWAxnO4C06z7osyvAmKYr556vPKe4qEzUPar_yhcJ_nFUwH-LxRt2VNj2BqiCZtVbxYeQRDLa_WemHVpsfFR0x0ffIgrxfrv8xESwHyqBoIG7MzRbuQrDl_27Oz5Bgco_clo5FgPjb5bSzHmPitFdf5gN3-97yFuau_hFLB-8RXLbtE2OqVwMKWwLDxUgvTyyk3TmfxwAsJBHD6ymoc78Ys8N28lzMx2K20Td3-aW3jp6ldFYe1Gw
+Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="martin.txt"
+Content-Disposition: form-data; name="file"; filename="testfile.txt"
 
 // File content
 < ./resources/testfile.txt
 
 ### Download file from bucket and directory
-GET localhost:8080/api/files/TestBucket/MeinSpeicher/testfile.txt
-Authorization: Bearer {{server_auth}}
+GET localhost:8080/api/files/1/p1%2Fsub1%2Fu1%2F42%2F807%2Fmartin.txt
+Authorization: Bearer {{token}}

@@ -1,28 +1,43 @@
 package de.storagesystem.api;
 
-import de.storagesystem.api.auth.Authentication;
-import de.storagesystem.api.auth.RSAAuthentication;
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+import de.storagesystem.api.properties.ServerProperty;
+import de.storagesystem.api.properties.StorageServerConfigProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Map;
 
 /**
  * @author Simon Brebeck
  */
 @SpringBootApplication
+@EnableEncryptableProperties
+@ConfigurationPropertiesScan("de.storagesystem.api.properties")
 public class StorageSystemApplication  {
+
+    private Environment env;
 
     /**
      * The {@link Logger} for this class
      */
     private static final Logger logger = LogManager.getLogger(StorageSystemApplication.class);
+
+    private final StorageServerConfigProperty storageSystemConfigProperty;
+
+    @Autowired
+    public StorageSystemApplication(
+            StorageServerConfigProperty storageSystemConfigProperty,
+            Environment env) {
+        this.storageSystemConfigProperty = storageSystemConfigProperty;
+        this.env = env;
+    }
 
     /**
      * The main method to start the application.
@@ -36,13 +51,27 @@ public class StorageSystemApplication  {
         SpringApplication.run(StorageSystemApplication.class, args);
     }
 
+
+    /**
+     * Start event
+     */
+    @PostConstruct
+    public void onStart() {
+        logger.info("Starting StorageSystem API Test");
+        logger.info("StorageSystem API Test is running on " +
+                storageSystemConfigProperty.server().protocol() + "://" +
+                env.getProperty("server.address") + ":" +
+                env.getProperty("server.port") + "/" +
+                " as " + storageSystemConfigProperty.server().prefix() +
+                 storageSystemConfigProperty.server().name());
+    }
+
     /**
      * Exit event
      */
     @PreDestroy
     public void onExit() {
         logger.info("Stopping StorageSystem API Test");
-
     }
 
 }

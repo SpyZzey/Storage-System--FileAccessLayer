@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 /**
  * @author Simon Brebeck
@@ -31,10 +33,10 @@ public class StorageFileController {
      */
     private final StorageFileService storageService;
 
-
     /**
      * Instantiates a new Storage file controller.
-     * @param storageService the storage service to access the storage files
+     *
+     * @param storageService              the storage service to access the storage files
      */
     @Autowired
     public StorageFileController(StorageFileService storageService) {
@@ -58,6 +60,7 @@ public class StorageFileController {
             @PathVariable String path)
             throws
             UserInputValidationException {
+        path = URLDecoder.decode(path, StandardCharsets.UTF_8);
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
         if(!inputValidation.validateFilePath(path))
             throw new UserInputValidationException("Invalid folder path");

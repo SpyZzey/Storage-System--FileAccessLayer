@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.Random;
 
 /**
@@ -92,7 +93,7 @@ public class StorageService {
     }
 
     /**
-     * Generate a path where a file can be stored for a user
+     * Generate a path (relative to ROOT) where a file can be stored for a user
      * @param userId The id of the user
      * @return The path where the file can be stored
      */
@@ -100,20 +101,20 @@ public class StorageService {
         Random random = new Random(System.currentTimeMillis());
         int partition = random.nextInt(maxNumberOfPartitions);
         int subpartition = random.nextInt(maxNumberOfPartitions);
-        String path = getUserStoragePath(userId) + File.separator + partition + File.separator + subpartition;
+        String path = getUserStoragePath(userId) + "/" + partition + "/" + subpartition;
         return createPartition(path);
     }
 
 
     /**
-     * Generate the path to the user root directory
+     * Generate the path (relative to ROOT) to the user root directory
      * @param userId The id of the user
      * @return The path to the user root directory
      */
     public String getUserStoragePath(long userId) {
         int partition = (int) (userId / (maxUserRootsPerSubpartition * maxSubpartitionsPerPartition)) + 1;
         int subpartition = (int) (userId / maxUserRootsPerSubpartition) + 1;
-        String path = ROOT + File.separator + "p" + partition + File.separator + "sub" + subpartition + File.separator + "u" + userId;
+        String path = "/p" + partition + "/sub" + subpartition + "/u" + userId;
         return createPartition(path);
     }
 
@@ -123,7 +124,7 @@ public class StorageService {
      * @return The path to the folder
      */
     public String createPartition(String partitionPath) {
-        File file = new File(partitionPath);
+        File file = new File(root() + partitionPath);
         if(!file.isDirectory() && !file.mkdirs()) {
             throw new StorageEntityCreationException("Could not create partition " + partitionPath);
         }

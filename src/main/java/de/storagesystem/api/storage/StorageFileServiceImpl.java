@@ -2,6 +2,8 @@ package de.storagesystem.api.storage;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.auth.RSAAuthentication;
+import de.storagesystem.api.properties.StorageServerConfigProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Simon Brebeck
@@ -34,20 +37,24 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
      */
     private static final Logger logger = LogManager.getLogger(StorageFileServiceImpl.class);
 
+
+    /**
+     * The {@link StorageServerConfigProperty} to access the storage server configuration
+     */
+    private final StorageServerConfigProperty storageServerConfigProperties;
+
     /**
      * The {@link Authentication} to create and verify the JWT Token
      */
-    private final Authentication auth;
+    private Authentication auth;
 
 
     /**
      * Instantiates a new Storage file service.
-     *
-     * @param auth instance of the {@link Authentication} to create and verify the JWT Token
      */
     @Autowired
-    public StorageFileServiceImpl(Authentication auth) {
-        this.auth = auth;
+    public StorageFileServiceImpl(StorageServerConfigProperty storageServerConfigProperties) {
+        this.storageServerConfigProperties = storageServerConfigProperties;
     }
 
     /**
@@ -56,6 +63,15 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
     @PostConstruct
     public void init() {
         super.init();
+        String issuer = storageServerConfigProperties.storage().issuer();
+        String publicKeyPath = storageServerConfigProperties.storage().publicKey();
+        String privateKeyPath = storageServerConfigProperties.storage().privateKey();
+        try {
+            this.auth = new RSAAuthentication(issuer, publicKeyPath, privateKeyPath);
+        } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
+            logger.error("Could not create the Authentication", e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -65,11 +81,12 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
     public ResponseEntity<Map<String, String>> storeFile(String serverAuth, long userId, MultipartFile file) {
         if(!verifyAccess(serverAuth)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        String fileName = file.getOriginalFilename();
-        String storedPath = getFileStoragePath(userId) + File.separator + fileName;
-        File storedFile = new File(storedPath);
+        String fileName = serverPrefix() + UUID.randomUUID();
+        String storedRelativePath = getFileStoragePath(userId) + "/" + fileName;
+
+        File storedFile = new File(root(), storedRelativePath);
         if(storedFile.exists()) {
-            logger.error("File " + file.getOriginalFilename() + " already exists.");
+            logger.error("File " + fileName + " already exists.");
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
                     "message","File already exists."));
@@ -85,10 +102,10 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
             ));
         }
 
-        logger.info("File " + file.getOriginalFilename() + " stored in bucket " + storedPath);
+        logger.info("File " + fileName + " stored in bucket " + storedRelativePath);
         return ResponseEntity.ok(Map.of(
                 "status", "ok",
-                "path", storedPath,
+                "path", storedRelativePath,
                 "message", "File stored."));
     }
 
@@ -99,7 +116,7 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
     public ResponseEntity<Map<String, String>> deleteFile(String serverAuth, long userId, String filePath) {
         if(!verifyAccess(serverAuth)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        String storedPath = root() + File.separator + filePath;
+        String storedPath = root() + "/" + filePath;
         File storedFile = new File(storedPath);
 
         if(!storedFile.exists()) {
@@ -138,6 +155,11 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
                 .contentLength(file.contentLength())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(file);
+    }
+
+    @Override
+    public ResponseEntity<Map<String, String>> loadAllFiles(String serverAuth, long userId) {
+        return null;
     }
 
     private ByteArrayResource getStorageFileResource(String filePath) {

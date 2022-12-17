@@ -46,4 +46,9 @@ public interface StorageFileService {
      * @return {@code ResponseEntity<Map<String, String>>}
      */
     ResponseEntity<Resource> loadFile(String serverAuth, long userId, String filePath);
+
+    /**
+     * Loads all files from a user as a path.
+     */
+    ResponseEntity<Map<String, String>> loadAllFiles(String serverAuth, long userId);
 }
